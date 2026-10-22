@@ -74,7 +74,7 @@ Printed before anything is created. `~` means a list price that still needs a me
 | Secrets Manager | always | $0.40 / environment | $0.40 / environment |
 | CloudWatch Logs | always | $0 | cents (14-day retention) |
 | IAM, CloudFormation, ACM | always | $0 | $0 |
-| Aurora Serverless v2 | optional | $0 compute + $3.65 public IPv4 + ~$0.10/GB | ~$1.20 compute (0.5 ACU × ~$0.06/h) + the above. Creation ~10 min; connect from the function 16–18 ms warm |
+| Aurora Serverless v2 | optional | $0 compute + $3.65 public IPv4 + ~$0.10/GB | ~$1.20 compute (0.5 ACU × ~$0.06/h) + the above. Creation ~10 min; connect from the function 16–18 ms warm; first request after auto-pause 15.1 s (measured) |
 | CloudFront + ACM (custom domain) | optional | $0 | $0 inside the free tier |
 | VPC + NAT (`--private`) | opt-in | ~$33 | ~$33 + data — never created by default |
 

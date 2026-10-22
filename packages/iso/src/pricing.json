@@ -59,6 +59,9 @@
     "auroraTlsVerifiedFromFunction": true,
     "leastPrivilegePolicyVerified": true,
     "cleanInstallSeconds": 1,
-    "cleanInstallMb": 4.9
+    "cleanInstallMb": 4.9,
+    "auroraResumeFromPauseConnectMs": 13744,
+    "auroraResumeFromPauseRequestMs": 15125,
+    "auroraAutoPauseObservedAfterMinutes": 5
   }
 }
