@@ -5,7 +5,7 @@ import fs from "node:fs";
 import { tmpProject, pkg, express } from "./helpers.js";
 
 const bin = path.resolve(__dirname, "../dist/iso.mjs");
-const run = (args: string[], cwd: string, env: Record<string, string> = {}) => execFileSync(process.execPath, [bin, ...args], { cwd, env: { ...process.env, ...env, AWS_ACCESS_KEY_ID: "x", AWS_SECRET_ACCESS_KEY: "y", AWS_PROFILE: "", AWS_EC2_METADATA_DISABLED: "true" }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+const run = (args: string[], cwd: string, env: Record<string, string> = {}) => execFileSync(process.execPath, [bin, ...args], { cwd, env: { ...process.env, ...env, AWS_ACCESS_KEY_ID: "x", AWS_SECRET_ACCESS_KEY: "y", AWS_PROFILE: "", AWS_EC2_METADATA_DISABLED: "true", NO_COLOR: "1", FORCE_COLOR: "0" }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 
 describe("cli (bundled)", () => {
   it("--version and --help", () => { expect(run(["--version"], process.cwd())).toMatch(/^\d+\.\d+/); expect(run(["--help"], process.cwd())).toContain("migrate"); });
