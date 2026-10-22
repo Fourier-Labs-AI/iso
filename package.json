@@ -1,0 +1,9 @@
+{
+  "name": "iso-monorepo",
+  "private": true,
+  "workspaces": ["packages/iso"],
+  "scripts": {
+    "build": "npm run build -w packages/iso",
+    "test": "npm run test -w packages/iso"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "_note": "List prices, us-east-1. Entries under `measured` come from the launch-day test account (22 Oct 2026, Express sample). Correctable without a release.",
+  "measured": false,
+  "lambdaWeb": {
+    "perMillionRequests": 0.3,
+    "perVcpuSecond": 2.76944e-05,
+    "perGbSecond": 3.6667e-06,
+    "vcpus": 2,
+    "memoryGb": 2,
+    "assumedCpuMsPerRequest": 30,
+    "assumedEnvHoursPer100k": 20
+  },
+  "secretsManager": {
+    "perSecretMonth": 0.4,
+    "per10kApiCalls": 0.05
+  },
+  "s3": {
+    "perGbMonth": 0.023
+  },
+  "cloudwatchLogs": {
+    "perGbIngested": 0.5,
+    "perGbStoredMonth": 0.03
+  },
+  "aurora": {
+    "perAcuHour": 0.12,
+    "minAcu": 0.5,
+    "perGbStorageMonth": 0.1,
+    "publicIpv4PerMonth": 3.65,
+    "resumeSeconds": 15
+  },
+  "cloudfront": {
+    "freeTierTb": 1,
+    "freeTierRequestsM": 10
+  },
+  "nat": {
+    "perMonth": 32.85,
+    "perGb": 0.045
+  },
+  "costExplorer": {
+    "perCall": 0.01
+  },
+  "measuredLaunchDay": {
+    "migrateToLiveSeconds": 25,
+    "redeploySeconds": 29,
+    "functionInitMs": [
+      271,
+      372
+    ],
+    "coldRequestMsFromClient": 1200,
+    "warmRequestMsFromClient": 750,
+    "clientRttNote": "client ~200ms RTT from us-east-1; server-side init from platform.initReport",
+    "fixedMonthlyUsd": 0.4
+  }
+}

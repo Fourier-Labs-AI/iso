@@ -1,0 +1,57 @@
+{
+  "name": "@isomorph/iso",
+  "version": "0.1.0",
+  "description": "Railway-shaped CLI that deploys Node apps to your own AWS account on Lambda Web Functions. No account, no backend, your secrets stay with you.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "iso": "./dist/iso.mjs"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "plugins",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepack": "rm -rf plugins && cp -R ../../plugins plugins",
+    "postpack": "rm -rf plugins"
+  },
+  "dependencies": {
+    "@aws-sdk/client-acm": "^3.1155.0",
+    "@aws-sdk/client-cloudformation": "^3.1155.0",
+    "@aws-sdk/client-cloudfront": "^3.1155.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1155.0",
+    "@aws-sdk/client-cost-explorer": "^3.1155.0",
+    "@aws-sdk/client-ec2": "^3.1155.0",
+    "@aws-sdk/client-iam": "^3.1155.0",
+    "@aws-sdk/client-lambda-web": "^3.1155.0",
+    "@aws-sdk/client-rds": "^3.1155.0",
+    "@aws-sdk/client-s3": "^3.1155.0",
+    "@aws-sdk/client-secrets-manager": "^3.1155.0",
+    "@aws-sdk/client-sts": "^3.1155.0",
+    "@aws-sdk/credential-providers": "^3.1155.0",
+    "@inquirer/prompts": "^7.0.0",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "commander": "^13.0.0",
+    "picocolors": "^1.1.1",
+    "smol-toml": "^1.3.0",
+    "yazl": "^3.3.1",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/yazl": "^2.4.6",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

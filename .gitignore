@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.tgz
+.iso-build/
+.DS_Store
+packages/iso/plugins/
