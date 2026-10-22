@@ -1,7 +1,34 @@
 {
-  "name": "iso",
+  "name": "railway-to-aws",
   "version": "0.1.0",
-  "description": "Move a Railway Node service to your own AWS (Lambda Web Functions) with zero code changes. /migrate-railway, /iso.",
-  "author": { "name": "Isomorph" },
-  "mcpServers": { "iso": { "command": "npx", "args": ["-y", "@isomorph.ai/iso@0.1.0", "mcp"] } }
+  "description": "Migrate a Railway Node.js service to your own AWS account on Lambda Web Functions with zero code changes. /migrate-railway detects blockers, shows every cost line, deploys, and never touches a secret value.",
+  "author": {
+    "name": "Isomorph"
+  },
+  "mcpServers": {
+    "iso": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@isomorph.ai/iso@0.1.0",
+        "mcp"
+      ]
+    }
+  },
+  "displayName": "Railway \u2192 AWS (iso)",
+  "homepage": "https://github.com/Fourier-Labs-AI/iso",
+  "repository": "https://github.com/Fourier-Labs-AI/iso",
+  "license": "MIT",
+  "keywords": [
+    "railway",
+    "railway-alternative",
+    "migrate",
+    "aws",
+    "lambda",
+    "serverless",
+    "deploy",
+    "express",
+    "hono",
+    "fastify"
+  ]
 }

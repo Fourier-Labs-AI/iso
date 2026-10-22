@@ -100,10 +100,10 @@ This registers the repo as a plugin marketplace and installs `iso` with the agen
 ```bash
 # Claude Code
 /plugin marketplace add Fourier-Labs-AI/iso
-/plugin install iso@isomorph
+/plugin install railway-to-aws@isomorph
 # Codex
 codex plugin marketplace add Fourier-Labs-AI/iso
-codex plugin add iso@isomorph
+codex plugin add railway-to-aws@isomorph
 ```
 
 Then `/migrate-railway` in Claude Code (the `migrate-railway` skill in Codex): the agent runs detect, explains each verdict, proposes trivial fixes as diffs (hardcoded port, missing `start` script, Next.js standalone), shows the plan and cost, hands you to the terminal for `aws connect` and secret entry, deploys, verifies, and prints the cutover checklist.

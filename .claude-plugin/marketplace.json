@@ -1,15 +1,27 @@
 {
   "name": "isomorph",
-  "owner": { "name": "Isomorph", "url": "https://github.com/Fourier-Labs-AI/iso" },
-  "metadata": { "description": "Railway → your own AWS on Lambda Web Functions, zero code changes." },
+  "owner": {
+    "name": "Isomorph",
+    "url": "https://github.com/Fourier-Labs-AI/iso"
+  },
+  "metadata": {
+    "description": "Railway \u2192 your own AWS on Lambda Web Functions, zero code changes."
+  },
   "plugins": [
     {
-      "name": "iso",
+      "name": "railway-to-aws",
       "source": "./plugins/claude",
-      "description": "Move a Railway Node service to your own AWS (Lambda Web Functions) with zero code changes. /migrate-railway, /iso.",
+      "description": "Migrate a Railway Node service to your own AWS (Lambda Web Functions) with zero code changes. /migrate-railway, /iso.",
       "version": "0.1.0",
       "category": "deployment",
-      "keywords": ["railway", "aws", "lambda", "serverless", "deploy"]
+      "keywords": [
+        "railway",
+        "migrate",
+        "aws",
+        "lambda",
+        "serverless",
+        "deploy"
+      ]
     }
   ]
 }

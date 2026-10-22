@@ -27,12 +27,12 @@ export function pluginCommand(): Command {
       const target = agent === "claude" ? path.join(os.homedir(), ".claude", "plugins", "iso") : path.join(os.homedir(), ".codex", "plugins", "iso");
       copy(src, target);
       ui.warn(`${bin} CLI not found; copied the plugin files to ${target}`);
-      ui.info(ui.dim(agent === "claude" ? `In Claude Code: /plugin marketplace add ${MARKETPLACE} then /plugin install iso@isomorph` : `In Codex: codex plugin marketplace add ${MARKETPLACE} && codex plugin add iso@isomorph`));
+      ui.info(ui.dim(agent === "claude" ? `In Claude Code: /plugin marketplace add ${MARKETPLACE} then /plugin install railway-to-aws@isomorph` : `In Codex: codex plugin marketplace add ${MARKETPLACE} && codex plugin add railway-to-aws@isomorph`));
       return;
     }
     const steps: string[][] = agent === "claude"
-      ? [["plugin", "marketplace", "add", source], ["plugin", "install", "iso@isomorph"]]
-      : [["plugin", "marketplace", "add", source], ["plugin", "add", "iso@isomorph"]];
+      ? [["plugin", "marketplace", "add", source], ["plugin", "install", "railway-to-aws@isomorph"]]
+      : [["plugin", "marketplace", "add", source], ["plugin", "add", "railway-to-aws@isomorph"]];
     for (const args of steps) {
       ui.step(`${bin} ${args.join(" ")}`);
       const r = spawnSync(bin, args, { stdio: "inherit" });

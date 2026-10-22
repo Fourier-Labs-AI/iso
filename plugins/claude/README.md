@@ -4,7 +4,7 @@ Move a Railway Node.js service to your own AWS account on Lambda Web Functions w
 
 ```
 /plugin marketplace add Fourier-Labs-AI/iso
-/plugin install iso@isomorph
+/plugin install railway-to-aws@isomorph
 /migrate-railway
 ```
 

@@ -1,11 +1,19 @@
 {
   "name": "isomorph",
-  "interface": { "displayName": "Isomorph" },
+  "interface": {
+    "displayName": "Isomorph"
+  },
   "plugins": [
     {
-      "name": "iso",
-      "source": { "source": "local", "path": "./plugins/codex" },
-      "policy": { "installation": "AVAILABLE", "authentication": "ON_USE" },
+      "name": "railway-to-aws",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
       "category": "Developer Tools"
     }
   ]
