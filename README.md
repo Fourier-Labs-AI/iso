@@ -24,7 +24,7 @@ Three things, every time:
 |---|---|
 | Frameworks | Express, Hono, Fastify, NestJS, Koa, plain `node:http`. Next.js only with `output: 'standalone'` (experimental) |
 | Runtime | Node.js 24, arm64, 2 vCPU / 2 GB, scale to zero, 128 concurrent requests per environment |
-| Database | Aurora Serverless v2 PostgreSQL (min 0 ACU, public endpoint, TLS forced) · an external `DATABASE_URL` (Neon, Supabase, RDS) · or keep your current DB |
+| Database | Aurora Serverless v2 PostgreSQL 17 (min 0 ACU, public endpoint, TLS forced; the RDS CA bundle ships in the zip so `pg` verifies it with no code change) · an external `DATABASE_URL` (Neon, Supabase, RDS) · or keep your current DB |
 | Secrets | Secrets Manager, one secret per environment, injected as env vars at deploy |
 | Ingress | The function's built-in HTTPS endpoint (free); custom domains via CloudFront + ACM (`iso domain add`) |
 | Environments | `production` plus any name (`staging`, `pr-123`), each its own function + secret |
@@ -74,7 +74,7 @@ Printed before anything is created. `~` means a list price that still needs a me
 | Secrets Manager | always | $0.40 / environment | $0.40 / environment |
 | CloudWatch Logs | always | $0 | cents (14-day retention) |
 | IAM, CloudFormation, ACM | always | $0 | $0 |
-| Aurora Serverless v2 | optional | $0 compute + ~$3.65 public IPv4 + ~$0.10/GB | ~$1.20 compute (0.5 ACU × ~$0.06/h) + the above |
+| Aurora Serverless v2 | optional | $0 compute + $3.65 public IPv4 + ~$0.10/GB | ~$1.20 compute (0.5 ACU × ~$0.06/h) + the above. Creation ~10 min; connect from the function 16–18 ms warm |
 | CloudFront + ACM (custom domain) | optional | $0 | $0 inside the free tier |
 | VPC + NAT (`--private`) | opt-in | ~$33 | ~$33 + data — never created by default |
 
@@ -83,7 +83,7 @@ A steadily-used Aurora cluster (~$0.06/h awake) costs more than a $5 Railway Pos
 ## We never hold a secret
 
 - There is no Isomorph login, API or backend. Credentials are your AWS credentials (`AWS_PROFILE`, SSO, env vars).
-- Secret values are typed into your terminal (masked) or passed to `iso variables set`; they go to Secrets Manager in your account and are baked into the function revision's environment. They are never written to disk by `iso`, never read from Railway, never sent anywhere else.
+- Secret values are typed into your terminal (masked) or passed to `iso variables set`; they go to Secrets Manager in your account and are copied into the function revision's environment variables (encrypted at rest by Lambda). They are never written to disk by `iso`, never read from Railway, never sent anywhere else. Who can read them is decided by your IAM: anyone with `secretsmanager:GetSecretValue` on `iso/*` or `lambda:GetWebFunctionRevision` in your account.
 - The Claude Code / Codex plugin's MCP server exposes variable **names** only; `iso_variables_set` tells the agent to hand you to the terminal.
 - `iso` never reads `.env`; it reads `.env.example` and your source for **names** only.
 
@@ -93,7 +93,18 @@ A steadily-used Aurora cluster (~$0.06/h awake) costs more than a $5 Railway Pos
 npx @isomorph/iso plugin install claude   # or: codex
 ```
 
-Then `/migrate-railway` in Claude Code: the agent runs detect, explains each verdict, proposes trivial fixes as diffs (hardcoded port, missing `start` script, Next.js standalone), shows the plan and cost, hands you to the terminal for `aws connect` and secret entry, deploys, verifies, and prints the cutover checklist.
+This registers the repo as a plugin marketplace and installs `iso` with the agent's own CLI. By hand:
+
+```bash
+# Claude Code
+/plugin marketplace add Fourier-Labs-AI/iso
+/plugin install iso@isomorph
+# Codex
+codex plugin marketplace add Fourier-Labs-AI/iso
+codex plugin add iso@isomorph
+```
+
+Then `/migrate-railway` in Claude Code (the `migrate-railway` skill in Codex): the agent runs detect, explains each verdict, proposes trivial fixes as diffs (hardcoded port, missing `start` script, Next.js standalone), shows the plan and cost, hands you to the terminal for `aws connect` and secret entry, deploys, verifies, and prints the cutover checklist.
 
 ## How it works
 
@@ -121,4 +132,6 @@ npm install && npm run build && npm test     # 34 unit tests; AWS smoke test: se
 
 ## Status
 
-Milestones A–C from the launch plan ship today and were smoke-tested on a real account (deploy, redeploy, variables, logs, rollback, auto-rollback on a failed health check, migrate, down). `iso add postgres`, `iso domain add` and the CI template are implemented but not yet exercised against a live account; treat them as beta until the numbers in the cost table lose their `~`. The CLI is free.
+Tested on a real AWS account on launch day: `aws connect`, `migrate`, `up`, `redeploy`, `variables`, `logs --tail`, `status`, `doctor`, `run`, `rollback`, auto-rollback on a failed health check, `down`, `add postgres` (Aurora Serverless v2 17.x, public endpoint, TLS verified from the function), `aws connect --ci` (OIDC role), and the whole flow again under the least-privilege `iso-admin` policy. Both plugins install through their agent's marketplace CLI and the MCP server answers `iso_detect`/`iso_plan`.
+
+Not yet exercised end to end: `iso domain add` (needs a real domain for ACM validation), Next.js standalone, and the `--private` database path (prints its cost and is not built). Numbers in the cost table marked `~` are list prices. The CLI is free.

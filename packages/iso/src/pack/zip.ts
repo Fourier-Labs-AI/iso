@@ -7,7 +7,7 @@ import { templatePath } from "../paths.js";
 import { ui } from "../ui.js";
 import { UserError } from "../config.js";
 
-export interface PackInput { dir: string; entryFile: string; buildCommand?: string; skipInstall?: boolean; buildInDocker?: boolean }
+export interface PackInput { dir: string; entryFile: string; buildCommand?: string; skipInstall?: boolean; buildInDocker?: boolean; includeRdsCa?: boolean }
 export interface PackResult { zipPath: string; bytes: number; files: number; unzippedBytes: number; sha: string }
 
 const EXCLUDE_DIRS = new Set([".git", ".github", ".iso-build", "coverage", ".vscode", ".idea", "test", "tests", "__tests__", "node_modules/.cache", ".next/cache"]);
@@ -42,6 +42,7 @@ export async function pack(i: PackInput): Promise<PackResult> {
   // 3. generated entry
   const entryTpl = fs.readFileSync(templatePath("iso-entry.mjs"), "utf8");
   fs.writeFileSync(path.join(stage, "iso-entry.mjs"), entryTpl.replace("__ENTRY__", i.entryFile.replace(/\\/g, "/")));
+  if (i.includeRdsCa) fs.copyFileSync(templatePath("rds-global-bundle.pem"), path.join(stage, "iso-rds-ca.pem"));
   // 4. zip (deterministic timestamps)
   const zipPath = path.join(build, "app.zip");
   const { files, unzippedBytes } = await zipDir(stage, zipPath);

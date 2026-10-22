@@ -1,7 +1,0 @@
-{
-  "name": "iso",
-  "version": "0.1.0",
-  "description": "Move a Railway Node service to your own AWS (Lambda Web Functions) with zero code changes.",
-  "skills": ["skills/migrate-railway/SKILL.md"],
-  "mcp_servers": { "iso": { "command": "npx", "args": ["-y", "@isomorph/iso@>=0.1.0", "mcp"] } }
-}

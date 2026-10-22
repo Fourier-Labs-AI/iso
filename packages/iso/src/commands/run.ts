@@ -6,13 +6,15 @@ import { resolveMap } from "../railway/refs.js";
 import { getEndpoint } from "../aws/lambdaweb.js";
 import { fnName } from "../context.js";
 import { ui } from "../ui.js";
+import { templatePath } from "../paths.js";
 
 async function envFor(o: any): Promise<NodeJS.ProcessEnv> {
   const c = await loadCtx(o);
   const vars = (await readVars(c.aws, c.cfg.project, c.env)) ?? {};
   const ep = await getEndpoint(c.aws, fnName(c)).catch(() => null);
   const r = resolveMap(vars, { env: c.env, endpointHost: ep?.domainName ?? undefined });
-  return { ...process.env, ...r.vars, ISO_ENV: c.env, PORT: process.env.PORT ?? "3000" };
+  const extra = c.cfg.database?.kind === "aurora" && !process.env.NODE_EXTRA_CA_CERTS ? { NODE_EXTRA_CA_CERTS: templatePath("rds-global-bundle.pem") } : {};
+  return { ...process.env, ...r.vars, ...extra, ISO_ENV: c.env, PORT: process.env.PORT ?? "3000" };
 }
 
 export function runCommand(): Command {

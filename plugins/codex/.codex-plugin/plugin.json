@@ -1,0 +1,20 @@
+{
+  "name": "iso",
+  "version": "0.1.0",
+  "description": "Move a Railway Node.js service to your own AWS account on Lambda Web Functions with zero code changes. Detects blockers, shows every cost line, deploys, and never touches a secret value.",
+  "author": { "name": "Isomorph" },
+  "homepage": "https://github.com/Fourier-Labs-AI/iso",
+  "repository": "https://github.com/Fourier-Labs-AI/iso",
+  "license": "MIT",
+  "keywords": ["railway", "aws", "lambda", "serverless", "deploy", "migration"],
+  "skills": "./skills",
+  "mcp": "./.mcp.json",
+  "interface": {
+    "displayName": "iso: Railway → AWS",
+    "shortDescription": "Deploy Railway Node apps to your own AWS",
+    "developerName": "Isomorph",
+    "category": "Developer Tools",
+    "capabilities": [],
+    "defaultPrompt": ["migrate this Railway service to my AWS account", "what would it cost to run this app on Lambda Web Functions?"]
+  }
+}

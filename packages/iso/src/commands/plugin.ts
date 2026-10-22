@@ -1,30 +1,44 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { Command } from "commander";
 import { pluginsPath } from "../paths.js";
 import { ui } from "../ui.js";
 import { UserError } from "../config.js";
 
+const MARKETPLACE = "Fourier-Labs-AI/iso";
+
+/**
+ * Both agents install plugins from a "marketplace" (a git repo with a manifest). This repo is one.
+ * We drive the agent's own CLI so the plugin is registered properly; if the CLI is missing we copy the files.
+ */
 export function pluginCommand(): Command {
-  const p = new Command("plugin").description("Install the Claude Code / Codex plugin files into your config dirs");
-  p.command("install <agent>").description("claude | codex").option("--dir <dir>", "override the target directory").action((agent: string, o) => {
+  const p = new Command("plugin").description("Install the Claude Code / Codex plugin");
+  p.command("install <agent>").description("claude | codex").option("--dir <dir>", "copy the files here instead of using the agent's CLI").option("--local", "register this checkout instead of GitHub (development)").action((agent: string, o) => {
+    if (agent !== "claude" && agent !== "codex") throw new UserError(`unknown agent "${agent}"`, "Use claude or codex.");
     const src = pluginsPath(agent);
-    if (!fs.existsSync(src)) throw new UserError(`unknown agent "${agent}"`, "Use claude or codex.");
-    const home = os.homedir();
-    const target = o.dir ?? (agent === "claude" ? path.join(home, ".claude", "plugins", "iso") : path.join(home, ".codex", "plugins", "iso"));
-    copy(src, target);
-    ui.ok(`installed ${agent} plugin to ${target}`);
-    if (agent === "claude") {
-      // register the MCP server + skill: a user-level marketplace is simplest without approval
-      const mcpPath = path.join(home, ".claude", "mcp.json");
-      ui.info(ui.dim(`Skill /migrate-railway and MCP server registered in ${target}.`));
-      ui.info(ui.dim(`If Claude Code does not pick it up: claude plugin marketplace add ${path.dirname(target)} ; then /plugin install iso`));
-      void mcpPath;
-    } else {
-      ui.info(ui.dim("Codex: add this to ~/.codex/config.toml if it is not picked up automatically:"));
-      ui.info(ui.dim('  [mcp_servers.iso]\n  command = "npx"\n  args = ["-y", "@isomorph/iso", "mcp"]'));
+    if (!fs.existsSync(src)) throw new UserError(`plugin files for ${agent} are missing from this install`);
+    const source = o.local ? path.resolve(src, "..", "..") : MARKETPLACE;
+    if (o.dir) { copy(src, o.dir); ui.ok(`copied ${agent} plugin files to ${o.dir}`); return; }
+    const bin = agent === "claude" ? "claude" : "codex";
+    const has = spawnSync(bin, ["--version"], { stdio: "ignore" }).status === 0;
+    if (!has) {
+      const target = agent === "claude" ? path.join(os.homedir(), ".claude", "plugins", "iso") : path.join(os.homedir(), ".codex", "plugins", "iso");
+      copy(src, target);
+      ui.warn(`${bin} CLI not found; copied the plugin files to ${target}`);
+      ui.info(ui.dim(agent === "claude" ? `In Claude Code: /plugin marketplace add ${MARKETPLACE} then /plugin install iso@isomorph` : `In Codex: codex plugin marketplace add ${MARKETPLACE} && codex plugin add iso@isomorph`));
+      return;
     }
+    const steps: string[][] = agent === "claude"
+      ? [["plugin", "marketplace", "add", source], ["plugin", "install", "iso@isomorph"]]
+      : [["plugin", "marketplace", "add", source], ["plugin", "add", "iso@isomorph"]];
+    for (const args of steps) {
+      ui.step(`${bin} ${args.join(" ")}`);
+      const r = spawnSync(bin, args, { stdio: "inherit" });
+      if (r.status !== 0 && !/marketplace/.test(args.join(" "))) throw new UserError(`${bin} ${args.join(" ")} failed`, "Run the command above by hand to see the error.");
+    }
+    ui.ok(`${agent} plugin installed · ${agent === "claude" ? "/migrate-railway" : "the migrate-railway skill"} is available in new sessions`);
   });
   return p;
 }

@@ -49,6 +49,16 @@
     "coldRequestMsFromClient": 1200,
     "warmRequestMsFromClient": 750,
     "clientRttNote": "client ~200ms RTT from us-east-1; server-side init from platform.initReport",
-    "fixedMonthlyUsd": 0.4
+    "fixedMonthlyUsd": 0.4,
+    "auroraCreateSeconds": "~10 min (cluster available in ~5, writer instance ~4 more)",
+    "auroraEngine": "aurora-postgresql 17.9",
+    "auroraConnectMsFromFunction": [
+      16,
+      18
+    ],
+    "auroraTlsVerifiedFromFunction": true,
+    "leastPrivilegePolicyVerified": true,
+    "cleanInstallSeconds": 1,
+    "cleanInstallMb": 4.9
   }
 }

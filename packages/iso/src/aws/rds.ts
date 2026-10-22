@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { CreateDBClusterCommand, CreateDBInstanceCommand, DescribeDBClustersCommand, CreateDBClusterParameterGroupCommand, ModifyDBClusterParameterGroupCommand, DescribeDBClusterParameterGroupsCommand, DeleteDBClusterCommand, DeleteDBInstanceCommand } from "@aws-sdk/client-rds";
+import { CreateDBClusterCommand, CreateDBInstanceCommand, DescribeDBClustersCommand, DescribeDBInstancesCommand, DescribeDBEngineVersionsCommand, DeleteDBClusterParameterGroupCommand, CreateDBClusterParameterGroupCommand, ModifyDBClusterParameterGroupCommand, DescribeDBClusterParameterGroupsCommand, DeleteDBClusterCommand, DeleteDBInstanceCommand } from "@aws-sdk/client-rds";
 import { EC2Client, DescribeSecurityGroupsCommand, CreateSecurityGroupCommand, AuthorizeSecurityGroupIngressCommand, DescribeVpcsCommand } from "@aws-sdk/client-ec2";
 import { type AwsCtx, isNotFound, sleep } from "./clients.js";
 import { names } from "../config.js";
@@ -25,10 +25,13 @@ export function generatePassword(): string {
 export async function createCluster(ctx: AwsCtx, project: string, opts: { maxCapacity: number; password: string }): Promise<ClusterInfo> {
   const id = names.cluster(project);
   const ec2 = new EC2Client({ region: ctx.region });
-  const pgName = `${id}-pg`;
+  // default engine version decides the parameter-group family (aurora-postgresql16, 17, …)
+  const ev = (await ctx.rds.send(new DescribeDBEngineVersionsCommand({ Engine: "aurora-postgresql", DefaultOnly: true }))).DBEngineVersions?.[0];
+  if (!ev?.EngineVersion || !ev.DBParameterGroupFamily) throw new Error("could not determine the default aurora-postgresql engine version");
+  const pgName = `${id}-${ev.DBParameterGroupFamily}`;
   try { await ctx.rds.send(new DescribeDBClusterParameterGroupsCommand({ DBClusterParameterGroupName: pgName })); }
   catch {
-    await ctx.rds.send(new CreateDBClusterParameterGroupCommand({ DBClusterParameterGroupName: pgName, DBParameterGroupFamily: "aurora-postgresql16", Description: "iso: force TLS" }));
+    await ctx.rds.send(new CreateDBClusterParameterGroupCommand({ DBClusterParameterGroupName: pgName, DBParameterGroupFamily: ev.DBParameterGroupFamily, Description: "iso: force TLS" }));
     await ctx.rds.send(new ModifyDBClusterParameterGroupCommand({ DBClusterParameterGroupName: pgName, Parameters: [{ ParameterName: "rds.force_ssl", ParameterValue: "1", ApplyMethod: "immediate" }] }));
   }
   const vpc = (await ec2.send(new DescribeVpcsCommand({ Filters: [{ Name: "is-default", Values: ["true"] }] }))).Vpcs?.[0];
@@ -39,18 +42,20 @@ export async function createCluster(ctx: AwsCtx, project: string, opts: { maxCap
     await ec2.send(new AuthorizeSecurityGroupIngressCommand({ GroupId: sg, IpPermissions: [{ IpProtocol: "tcp", FromPort: 5432, ToPort: 5432, IpRanges: [{ CidrIp: "0.0.0.0/0", Description: "Lambda egress IPs are not stable; TLS + 32-char password" }] }] }));
   }
   await ctx.rds.send(new CreateDBClusterCommand({
-    DBClusterIdentifier: id, Engine: "aurora-postgresql", EngineMode: "provisioned",
+    DBClusterIdentifier: id, Engine: "aurora-postgresql", EngineVersion: ev.EngineVersion, EngineMode: "provisioned",
     MasterUsername: "iso", MasterUserPassword: opts.password, DatabaseName: "postgres",
     DBClusterParameterGroupName: pgName, VpcSecurityGroupIds: [sg], StorageEncrypted: true,
     ServerlessV2ScalingConfiguration: { MinCapacity: 0, MaxCapacity: opts.maxCapacity, SecondsUntilAutoPause: 300 },
     Tags: [{ Key: "iso:project", Value: project }],
   }));
   await ctx.rds.send(new CreateDBInstanceCommand({ DBInstanceIdentifier: `${id}-1`, DBClusterIdentifier: id, DBInstanceClass: "db.serverless", Engine: "aurora-postgresql", PubliclyAccessible: true, Tags: [{ Key: "iso:project", Value: project }] }));
+  // the cluster reports "available" before its writer instance exists; the endpoint only resolves once the instance is up
   for (let i = 0; i < 200; i++) {
     await sleep(6000);
     const c = await describeCluster(ctx, project);
-    if (c?.status === "available" && c.endpoint) return c;
-    if (i % 10 === 0) ui.step(`cluster ${c?.status ?? "creating"}…`);
+    const inst = (await ctx.rds.send(new DescribeDBInstancesCommand({ DBInstanceIdentifier: `${id}-1` })).catch(() => null))?.DBInstances?.[0];
+    if (c?.status === "available" && c.endpoint && inst?.DBInstanceStatus === "available") return c;
+    if (i % 10 === 0) ui.step(`cluster ${c?.status ?? "creating"} · instance ${inst?.DBInstanceStatus ?? "creating"}…`);
   }
   throw new Error("timed out waiting for the Aurora cluster");
 }
@@ -59,6 +64,9 @@ export async function deleteCluster(ctx: AwsCtx, project: string) {
   const id = names.cluster(project);
   try { await ctx.rds.send(new DeleteDBInstanceCommand({ DBInstanceIdentifier: `${id}-1`, SkipFinalSnapshot: true })); } catch {}
   try { await ctx.rds.send(new DeleteDBClusterCommand({ DBClusterIdentifier: id, SkipFinalSnapshot: true })); } catch (e) { if (!isNotFound(e)) throw e; }
+  // parameter groups can only go once the cluster is gone; best effort after a wait
+  for (let i = 0; i < 60; i++) { await sleep(5000); if (!(await describeCluster(ctx, project))) break; }
+  for (const fam of ["aurora-postgresql15", "aurora-postgresql16", "aurora-postgresql17", "aurora-postgresql18"]) { try { await ctx.rds.send(new DeleteDBClusterParameterGroupCommand({ DBClusterParameterGroupName: `${id}-${fam}` })); } catch {} }
 }
 
 export function databaseUrl(c: ClusterInfo, user: string, password: string, db: string): string {

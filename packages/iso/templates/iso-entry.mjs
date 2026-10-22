@@ -12,6 +12,17 @@ process.env.HOST = "0.0.0.0";
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
 process.chdir(path.dirname(new URL(import.meta.url).pathname));
 
+// Aurora: Amazon's RDS CA is not in Node's root store. If iso shipped the bundle, trust it (Node ≥ 24.5).
+try {
+  const fs = await import("node:fs");
+  if (fs.existsSync("iso-rds-ca.pem")) {
+    const tls = await import("node:tls");
+    const pems = fs.readFileSync("iso-rds-ca.pem", "utf8").match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g) ?? [];
+    if (typeof tls.setDefaultCACertificates === "function") tls.setDefaultCACertificates([...tls.getCACertificates("default"), ...pems]);
+    else process.env.PGSSLROOTCERT = path.resolve("iso-rds-ca.pem");
+  }
+} catch (e) { console.warn("iso: could not register RDS CA bundle:", e?.message); }
+
 const ORIGIN_SECRET = process.env.ISO_ORIGIN_SECRET;
 if (ORIGIN_SECRET) {
   // Custom domain via CloudFront: reject requests that bypass the distribution.

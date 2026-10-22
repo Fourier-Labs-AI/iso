@@ -46,7 +46,7 @@ export async function up(c: Ctx, o: UpOptions = {}): Promise<UpResult> {
   let sha = gitSha(c.serviceDir) ?? "nogit";
   if (!s3obj) {
     ui.step(`packaging ${c.service} (entry ${start.entryFile})`);
-    const p = await pack({ dir: c.serviceDir, entryFile: start.entryFile, buildCommand: railway.build.buildCommand, skipInstall: o.skipInstall, buildInDocker: o.buildInDocker });
+    const p = await pack({ dir: c.serviceDir, entryFile: start.entryFile, buildCommand: railway.build.buildCommand, skipInstall: o.skipInstall, buildInDocker: o.buildInDocker, includeRdsCa: c.cfg.database?.kind === "aurora" });
     sha = p.sha;
     ui.ok(`zip ${mb(p.bytes)} (${p.files} files, ${mb(p.unzippedBytes)} unzipped)`);
     await ensureBucket(c.aws);

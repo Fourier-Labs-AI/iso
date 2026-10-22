@@ -4,3 +4,4 @@ dist/
 .iso-build/
 .DS_Store
 packages/iso/plugins/
+.claude/settings.local.json

@@ -11,7 +11,8 @@
     "dist",
     "templates",
     "plugins",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
@@ -22,9 +23,17 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prepack": "rm -rf plugins && cp -R ../../plugins plugins",
-    "postpack": "rm -rf plugins"
+    "postpack": "rm -rf plugins",
+    "prepublishOnly": "npm run typecheck && npm run build && npm test"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/yazl": "^2.4.6",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
     "@aws-sdk/client-acm": "^3.1155.0",
     "@aws-sdk/client-cloudformation": "^3.1155.0",
     "@aws-sdk/client-cloudfront": "^3.1155.0",
@@ -46,12 +55,30 @@
     "yazl": "^3.3.1",
     "zod": "^3.24.0"
   },
-  "devDependencies": {
-    "@types/node": "^24.0.0",
-    "@types/yazl": "^2.4.6",
-    "tsup": "^8.3.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fourier-Labs-AI/iso.git",
+    "directory": "packages/iso"
+  },
+  "homepage": "https://github.com/Fourier-Labs-AI/iso#readme",
+  "bugs": "https://github.com/Fourier-Labs-AI/iso/issues",
+  "keywords": [
+    "railway",
+    "aws",
+    "lambda",
+    "lambda-web-functions",
+    "serverless",
+    "deploy",
+    "migration",
+    "express",
+    "hono",
+    "fastify",
+    "nestjs",
+    "mcp",
+    "claude-code",
+    "codex"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
