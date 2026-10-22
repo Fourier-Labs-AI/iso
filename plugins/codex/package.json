@@ -1,0 +1,7 @@
+{
+  "name": "iso-claude-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lockfile for the iso plugin's MCP launcher (npx @isomorph.ai/iso mcp)",
+  "dependencies": { "@isomorph.ai/iso": "0.1.0" }
+}
