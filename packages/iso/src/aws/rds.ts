@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { CreateDBClusterCommand, CreateDBInstanceCommand, DescribeDBClustersCommand, DescribeDBInstancesCommand, DescribeDBEngineVersionsCommand, DeleteDBClusterParameterGroupCommand, CreateDBClusterParameterGroupCommand, ModifyDBClusterParameterGroupCommand, DescribeDBClusterParameterGroupsCommand, DeleteDBClusterCommand, DeleteDBInstanceCommand } from "@aws-sdk/client-rds";
-import { EC2Client, DescribeSecurityGroupsCommand, CreateSecurityGroupCommand, AuthorizeSecurityGroupIngressCommand, DescribeVpcsCommand } from "@aws-sdk/client-ec2";
+import { EC2Client, DescribeSecurityGroupsCommand, CreateSecurityGroupCommand, AuthorizeSecurityGroupIngressCommand, DescribeVpcsCommand, DeleteSecurityGroupCommand } from "@aws-sdk/client-ec2";
 import { type AwsCtx, isNotFound, sleep } from "./clients.js";
 import { names } from "../config.js";
 import { ui } from "../ui.js";
@@ -64,9 +64,15 @@ export async function deleteCluster(ctx: AwsCtx, project: string) {
   const id = names.cluster(project);
   try { await ctx.rds.send(new DeleteDBInstanceCommand({ DBInstanceIdentifier: `${id}-1`, SkipFinalSnapshot: true })); } catch {}
   try { await ctx.rds.send(new DeleteDBClusterCommand({ DBClusterIdentifier: id, SkipFinalSnapshot: true })); } catch (e) { if (!isNotFound(e)) throw e; }
-  // parameter groups can only go once the cluster is gone; best effort after a wait
-  for (let i = 0; i < 60; i++) { await sleep(5000); if (!(await describeCluster(ctx, project))) break; }
+  // parameter group and security group can only go once the cluster is gone (instance deletion takes ~10 min)
+  ui.step("waiting for the cluster to finish deleting (up to 20 min; ctrl-c leaves the $0 parameter group and security group behind)");
+  for (let i = 0; i < 240; i++) { await sleep(5000); if (!(await describeCluster(ctx, project))) break; }
   for (const fam of ["aurora-postgresql15", "aurora-postgresql16", "aurora-postgresql17", "aurora-postgresql18"]) { try { await ctx.rds.send(new DeleteDBClusterParameterGroupCommand({ DBClusterParameterGroupName: `${id}-${fam}` })); } catch {} }
+  try {
+    const ec2 = new EC2Client({ region: ctx.region });
+    const sg = (await ec2.send(new DescribeSecurityGroupsCommand({ Filters: [{ Name: "group-name", Values: [`${id}-sg`] }] }))).SecurityGroups?.[0]?.GroupId;
+    if (sg) for (let i = 0; i < 12; i++) { try { await ec2.send(new DeleteSecurityGroupCommand({ GroupId: sg })); break; } catch { await sleep(10000); } }
+  } catch {}
 }
 
 export function databaseUrl(c: ClusterInfo, user: string, password: string, db: string): string {
