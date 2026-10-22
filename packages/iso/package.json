@@ -1,5 +1,5 @@
 {
-  "name": "@isomorph/iso",
+  "name": "@isomorph.ai/iso",
   "version": "0.1.0",
   "description": "Railway-shaped CLI that deploys Node apps to your own AWS account on Lambda Web Functions. No account, no backend, your secrets stay with you.",
   "license": "MIT",

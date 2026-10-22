@@ -3,8 +3,8 @@
 **Railway's deploys are paused. Your Node app can be on your own AWS in 10 minutes: same commands, zero code changes, your secrets stay in your account.**
 
 ```bash
-npx @isomorph/iso aws connect     # once per machine: finds your AWS creds, creates a $0 core stack
-npx @isomorph/iso migrate         # in your Railway repo: detect → cost → secrets → deploy → live URL
+npx @isomorph.ai/iso aws connect     # once per machine: finds your AWS creds, creates a $0 core stack
+npx @isomorph.ai/iso migrate         # in your Railway repo: detect → cost → secrets → deploy → live URL
 ```
 
 Measured on launch day (Express sample, us-east-1, fresh account): `migrate` to live URL in **25 s**; a re-deploy in **29 s**; function init **271–372 ms**; fixed cost **$0.40/month** (one Secrets Manager secret). No Isomorph account, no Isomorph API, no telemetry. The CLI works with isomorph.com unreachable.
@@ -90,7 +90,7 @@ A steadily-used Aurora cluster (~$0.06/h awake) costs more than a $5 Railway Pos
 ## Agents
 
 ```bash
-npx @isomorph/iso plugin install claude   # or: codex
+npx @isomorph.ai/iso plugin install claude   # or: codex
 ```
 
 Then `/migrate-railway` in Claude Code: the agent runs detect, explains each verdict, proposes trivial fixes as diffs (hardcoded port, missing `start` script, Next.js standalone), shows the plan and cost, hands you to the terminal for `aws connect` and secret entry, deploys, verifies, and prints the cutover checklist.

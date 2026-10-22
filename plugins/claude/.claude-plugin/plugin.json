@@ -3,5 +3,5 @@
   "version": "0.1.0",
   "description": "Move a Railway Node service to your own AWS (Lambda Web Functions) with zero code changes. /migrate-railway, /iso.",
   "author": { "name": "Isomorph" },
-  "mcpServers": { "iso": { "command": "npx", "args": ["-y", "@isomorph/iso@>=0.1.0", "mcp"] } }
+  "mcpServers": { "iso": { "command": "npx", "args": ["-y", "@isomorph.ai/iso@>=0.1.0", "mcp"] } }
 }
