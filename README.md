@@ -7,6 +7,8 @@ npx @isomorph.ai/iso aws connect     # once per machine: finds your AWS creds, c
 npx @isomorph.ai/iso migrate         # in your Railway repo: detect → cost → secrets → deploy → live URL
 ```
 
+![iso migrate demo](docs/demo.svg)
+
 Measured on launch day (Express sample, us-east-1, fresh account): `migrate` to live URL in **25 s**; a re-deploy in **29 s**; function init **271–372 ms**; fixed cost **$0.40/month** (one Secrets Manager secret). No Isomorph account, no Isomorph API, no telemetry. The CLI works with isomorph.com unreachable.
 
 ## What it is
