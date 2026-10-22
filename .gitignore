@@ -5,3 +5,4 @@ dist/
 .DS_Store
 packages/iso/plugins/
 .claude/settings.local.json
+.gstack/
